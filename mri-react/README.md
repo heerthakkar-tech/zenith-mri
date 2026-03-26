@@ -83,7 +83,7 @@ Zenith MRI is a full-stack web application that uses deep learning to analyze MR
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-username/zenith-mri.git
+git clone https://github.com/heerthakkar-tech/zenith-mri.git
 cd zenith-mri
 ```
 
@@ -103,10 +103,18 @@ npm install
 node server.js
 ```
 
-### 4. Run model
+## 🧠 AI Model Notice
 
-```bash
-python main.py
+The trained AI model file (`.h5`) and FastAPI service are not included in this repository due to size limitations.
+
+To run the full system locally:
+- Ensure the FastAPI model server is running separately
+- Update the API endpoint in the backend if needed
+
+This repository focuses on:
+- Frontend (React UI)
+- Backend (Node.js API)
+- Report generation & analytics
 ```
 
 ---
