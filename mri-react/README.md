@@ -115,7 +115,6 @@ This repository focuses on:
 - Frontend (React UI)
 - Backend (Node.js API)
 - Report generation & analytics
-```
 
 ---
 
