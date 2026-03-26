@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brain Tumor MRI Classification</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      text-align: center;
+      color: #667eea;
+      margin-bottom: 10px;
+      font-size: 2em;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 0.95em;
+    }
+
+    .upload-area {
+      border: 3px dashed #667eea;
+      border-radius: 15px;
+      padding: 40px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+
+    .upload-area:hover {
+      border-color: #764ba2;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      transform: translateY(-2px);
+    }
+
+    .upload-area.dragover {
+      border-color: #764ba2;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+    }
+
+    #file-input {
+      display: none;
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      color: #667eea;
+    }
+
+    .upload-text {
+      color: #666;
+      font-size: 1.1em;
+      margin-bottom: 10px;
+    }
+
+    .file-name {
+      color: #764ba2;
+      font-weight: bold;
+      margin-top: 15px;
+      font-size: 0.9em;
+    }
+
+    .btn-predict {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 50px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-predict:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    .btn-predict:active {
+      transform: translateY(0);
+    }
+
+    .btn-predict:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .result-container {
+      margin-top: 30px;
+      padding: 25px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      display: none;
+      animation: slideIn 0.5s ease-in-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-container.show {
+      display: block;
+    }
+
+    .result-title {
+      font-size: 1.2em;
+      color: #667eea;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-label {
+      color: #666;
+      font-weight: 600;
+    }
+
+    .result-value {
+      color: #764ba2;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loader.show {
+      display: block;
+    }
+
+    .error {
+      background: linear-gradient(135deg, rgba(255, 68, 68, 0.1) 0%, rgba(255, 100, 100, 0.1) 100%);
+      color: #ff4444;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .error.show {
+      display: block;
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    .confidence-bar {
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      transition: width 1s ease-in-out;
+      width: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧠 Brain Tumor MRI Classifier</h1>
+    <p class="subtitle">Upload an MRI scan for AI-powered analysis</p>
+    
+    <form id="upload-form">
+      <div class="upload-area" id="upload-area">
+        <div class="upload-icon">📤</div>
+        <div class="upload-text">Click to upload or drag and drop</div>
+        <div class="upload-text" style="font-size: 0.85em; color: #999;">Supported: JPG, PNG, JPEG</div>
+        <input type="file" id="file-input" accept="image/*" required />
+        <div class="file-name" id="file-name"></div>
+      </div>
+      
+      <button type="submit" class="btn-predict" id="btn-predict">Analyze MRI Scan</button>
+    </form>
+
+    <div class="loader" id="loader"></div>
+    <div class="error" id="error"></div>
+
+    <div class="result-container" id="result-container">
+      <div class="result-title">📊 Analysis Results</div>
+      <div class="result-item">
+        <span class="result-label">Diagnosis:</span>
+        <span class="result-value" id="prediction">-</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">Confidence:</span>
+        <span class="result-value" id="confidence">-</span>
+      </div>
+      <div class="confidence-bar">
+        <div class="confidence-fill" id="confidence-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('upload-form');
+    const fileInput = document.getElementById('file-input');
+    const uploadArea = document.getElementById('upload-area');
+    const fileName = document.getElementById('file-name');
+    const loader = document.getElementById('loader');
+    const resultContainer = document.getElementById('result-container');
+    const errorDiv = document.getElementById('error');
+    const btnPredict = document.getElementById('btn-predict');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        fileName.textContent = `Selected: ${e.target.files[0].name}`;
+      }
+    });
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      uploadArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      uploadArea.addEventListener(eventName, () => uploadArea.classList.add('dragover'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('dragover'), false);
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      fileInput.files = files;
+      if (files.length > 0) {
+        fileName.textContent = `Selected: ${files[0].name}`;
+      }
+    });
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+
+      if (!fileInput.files.length) {
+        showError('Please select an image file');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      loader.classList.add('show');
+      resultContainer.classList.remove('show');
+      errorDiv.classList.remove('show');
+      btnPredict.disabled = true;
+
+      try {
+        const response = await fetch('http://localhost:8000/predict/', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to get prediction from server');
+        }
+
+        const data = await response.json();
+        
+        loader.classList.remove('show');
+        showResult(data.prediction, data.confidence);
+        btnPredict.disabled = false;
+
+      } catch (error) {
+        loader.classList.remove('show');
+        showError(error.message);
+        btnPredict.disabled = false;
+      }
+    };
+
+    function showResult(prediction, confidence) {
+      document.getElementById('prediction').textContent = prediction;
+      document.getElementById('confidence').textContent = `${(confidence * 100).toFixed(1)}%`;
+      resultContainer.classList.add('show');
+      
+      setTimeout(() => {
+        document.getElementById('confidence-fill').style.width = `${confidence * 100}%`;
+      }, 100);
+    }
+
+    function showError(message) {
+      errorDiv.textContent = `⚠️ Error: ${message}`;
+      errorDiv.classList.add('show');
+    }
+  </script>
+</body>
+</html>
