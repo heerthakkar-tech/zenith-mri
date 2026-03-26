@@ -75,7 +75,7 @@ The server will start on `http://localhost:3000` by default.
 - **File Size Limit**: 10MB
 - **Allowed File Types**: JPEG, JPG, PNG, GIF
 - **FastAPI URL**: `http://localhost:8000/predict/` (hardcoded)
-- **MongoDB URI**: `mongodb://127.0.0.1:27017/brain_tumor_db` (hardcoded)
+- **MongoDB URI**: `mongodb://127.0.0.1:27017/brain_tumor_db` (hardcoded )
 
 ## MongoDB Schema
 
